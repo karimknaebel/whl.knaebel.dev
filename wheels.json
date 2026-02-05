@@ -1,0 +1,29 @@
+{
+  "repo": "karimknaebel/whl.knaebel.dev",
+  "wheels": [
+    {
+      "filename": "gloss_rs-0.8.0-cp38-abi3-linux_aarch64.whl",
+      "package": "gloss-rs",
+      "release_tag": "gloss_rs-0.8.0",
+      "sha256": "f1396a61f0ad2ca60d73cabedff3e48ec17dd0fdd9940938602f7e23b67deda5",
+      "size_bytes": 7071814,
+      "version": "0.8.0"
+    },
+    {
+      "filename": "natten-0.21.1+torch2100cu130-cp314-cp314-linux_aarch64.whl",
+      "package": "natten",
+      "release_tag": "natten-0.21.1+torch2100cu130",
+      "sha256": "2919faffc74faf25ea8ee4b4b70024eb79188b73e8c731bf301a7986821e9383",
+      "size_bytes": 101154755,
+      "version": "0.21.1+torch2100cu130"
+    },
+    {
+      "filename": "natten-0.21.1+torch2100cu130-cp314-cp314-linux_x86_64.whl",
+      "package": "natten",
+      "release_tag": "natten-0.21.1+torch2100cu130",
+      "sha256": "63bfd93fa51ec35b617734626270e393c7f9e6ff40ea3321ba14bffd81ea9bcb",
+      "size_bytes": 101604819,
+      "version": "0.21.1+torch2100cu130"
+    }
+  ]
+}
