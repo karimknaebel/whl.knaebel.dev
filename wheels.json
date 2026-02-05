@@ -12,17 +12,17 @@
     {
       "filename": "natten-0.21.1+torch2100cu130-cp314-cp314-linux_aarch64.whl",
       "package": "natten",
-      "release_tag": "natten-0.21.1+torch2100cu130",
-      "sha256": "2919faffc74faf25ea8ee4b4b70024eb79188b73e8c731bf301a7986821e9383",
-      "size_bytes": 101154755,
+      "release_tag": "fix-natten-0.21.1+torch2100cu130",
+      "sha256": "9bca2d77fec6daee69faaa04fa2ed6abbe0c0658c8dad3a4806bb5359bbf3b75",
+      "size_bytes": 101154975,
       "version": "0.21.1+torch2100cu130"
     },
     {
       "filename": "natten-0.21.1+torch2100cu130-cp314-cp314-linux_x86_64.whl",
       "package": "natten",
-      "release_tag": "natten-0.21.1+torch2100cu130",
-      "sha256": "63bfd93fa51ec35b617734626270e393c7f9e6ff40ea3321ba14bffd81ea9bcb",
-      "size_bytes": 101604819,
+      "release_tag": "fix-natten-0.21.1+torch2100cu130",
+      "sha256": "ffb89349b4dbb653e1a5f83032b8a9a1da43747f2e7bfe296defad6095917ced",
+      "size_bytes": 101605039,
       "version": "0.21.1+torch2100cu130"
     }
   ]
