@@ -24,6 +24,14 @@
       "sha256": "ffb89349b4dbb653e1a5f83032b8a9a1da43747f2e7bfe296defad6095917ced",
       "size_bytes": 101605039,
       "version": "0.21.1+torch2100cu130"
+    },
+    {
+      "filename": "natten-0.21.5.dev10+torch2100cu130-cp314-cp314-linux_x86_64.whl",
+      "package": "natten",
+      "release_tag": "wheels-2026-02-06T142905",
+      "sha256": "668e15e4210388bdfe20551acc81536fff5ee097b8e312811afdd7ee56b78093",
+      "size_bytes": 161200943,
+      "version": "0.21.5.dev10+torch2100cu130"
     }
   ]
 }
