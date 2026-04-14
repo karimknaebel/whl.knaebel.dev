@@ -1,5 +1,15 @@
 {
   "repo": "karimknaebel/whl.knaebel.dev",
+  "sdists": [
+    {
+      "filename": "gloss_rs-0.9.0.tar.gz",
+      "package": "gloss-rs",
+      "release_tag": "wheels-2026-04-14T211633",
+      "sha256": "7c540fa3976303850485cc5b0677bb3598b8b9e0c64ad86015b87f6e40492698",
+      "size_bytes": 447362,
+      "version": "0.9.0"
+    }
+  ],
   "wheels": [
     {
       "filename": "gloss_rs-0.8.0-cp38-abi3-linux_aarch64.whl",
