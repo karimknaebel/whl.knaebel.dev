@@ -20,6 +20,14 @@
       "version": "0.8.0"
     },
     {
+      "filename": "gloss_rs-0.9.0-cp38-abi3-linux_aarch64.whl",
+      "package": "gloss-rs",
+      "release_tag": "wheels-2026-04-14T212037",
+      "sha256": "ba89a5cdf616d931b95d49509f72b914bbaa5974deeffd0c40df67fe06864894",
+      "size_bytes": 7183689,
+      "version": "0.9.0"
+    },
+    {
       "filename": "natten-0.21.5.dev10+torch2100cu130-cp314-cp314-linux_aarch64.whl",
       "package": "natten",
       "release_tag": "wheels-2026-02-08T091915",
