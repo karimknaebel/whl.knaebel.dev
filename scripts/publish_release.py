@@ -15,17 +15,19 @@ MANIFEST_NAME = "wheels.json"
 WHEEL_NAME_RE = re.compile(
     r"^(?P<name>.+?)-(?P<version>[^-]+)(?:-(?P<build>\d[^-]*))?-(?P<py>[^-]+)-(?P<abi>[^-]+)-(?P<plat>[^-]+)\.whl$"
 )
+SDIST_SUFFIXES = (".tar.gz", ".zip")
 GITHUB_REPO_RE = re.compile(r"^(?:git@github\.com:|https://github\.com/)([^/]+/[^/]+?)(?:\.git)?$")
 
 
 @dataclass(frozen=True)
-class WheelRecord:
+class ArtifactRecord:
     filename: str
     package: str
     version: str
     size_bytes: int
     sha256: str
     release_tag: str
+    kind: str
 
 
 def canonicalize_package_name(name: str) -> str:
@@ -65,23 +67,46 @@ def write_manifest(path: Path, manifest: dict) -> None:
     path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
-def collect_wheels(paths: list[Path], tag: str) -> list[WheelRecord]:
-    records: list[WheelRecord] = []
-    for path in paths:
-        match = WHEEL_NAME_RE.match(path.name)
-        if not match:
-            raise SystemExit(f"Unrecognized wheel filename: {path.name}")
+def parse_sdist_filename(filename: str) -> tuple[str, str]:
+    for suffix in SDIST_SUFFIXES:
+        if filename.endswith(suffix):
+            stem = filename[: -len(suffix)]
+            break
+    else:
+        raise SystemExit(f"Unsupported distribution filename: {filename}")
 
-        package = canonicalize_package_name(match.group("name"))
-        version = match.group("version")
+    package, sep, version = stem.rpartition("-")
+    if not sep or not package or not version:
+        raise SystemExit(f"Unrecognized sdist filename: {filename}")
+
+    return canonicalize_package_name(package), version
+
+
+def collect_artifacts(paths: list[Path], tag: str) -> list[ArtifactRecord]:
+    records: list[ArtifactRecord] = []
+    for path in paths:
+        package: str
+        version: str
+        kind: str
+
+        match = WHEEL_NAME_RE.match(path.name)
+        if match:
+            package = canonicalize_package_name(match.group("name"))
+            version = match.group("version")
+            kind = "wheel"
+        else:
+            package, version = parse_sdist_filename(path.name)
+            kind = "sdist"
+
         records.append(
-            WheelRecord(
+            ArtifactRecord(
                 filename=path.name,
                 package=package,
                 version=version,
                 size_bytes=path.stat().st_size,
                 sha256=sha256_file(path),
                 release_tag=tag,
+                kind=kind,
             )
         )
     return records
@@ -93,25 +118,30 @@ def ensure_repo(manifest_repo: str, cli_repo: str) -> str:
     return cli_repo or manifest_repo
 
 
-def create_release(tag: str, title: str, notes: str, wheel_paths: list[Path]) -> None:
-    cmd = ["gh", "release", "create", tag, *[str(path) for path in wheel_paths]]
+def create_release(tag: str, title: str, notes: str, artifact_paths: list[Path]) -> None:
+    cmd = ["gh", "release", "create", tag, *[str(path) for path in artifact_paths]]
     cmd.extend(["--title", title, "--notes", notes])
     subprocess.run(cmd, check=True)
 
 
+def iter_manifest_artifacts(manifest: dict):
+    yield from manifest.get("wheels", [])
+    yield from manifest.get("sdists", [])
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Publish wheels to a GitHub release.")
-    parser.add_argument("wheels", nargs="+", help="Wheel files to publish.")
+    parser = argparse.ArgumentParser(description="Publish wheel and sdist files to a GitHub release.")
+    parser.add_argument("artifacts", nargs="+", help="Distribution files to publish.")
     parser.add_argument("--tag", required=True, help="Release tag to create.")
     parser.add_argument("--title", help="Release title (defaults to tag).")
     parser.add_argument("--repo", help="GitHub repo in owner/name format.")
-    parser.add_argument("--notes", default="Automated wheel release.", help="Release notes.")
+    parser.add_argument("--notes", default="Automated package release.", help="Release notes.")
     args = parser.parse_args()
 
-    wheel_paths = [Path(path) for path in args.wheels]
-    missing = [str(path) for path in wheel_paths if not path.exists()]
+    artifact_paths = [Path(path) for path in args.artifacts]
+    missing = [str(path) for path in artifact_paths if not path.exists()]
     if missing:
-        raise SystemExit(f"Missing wheel files: {', '.join(missing)}")
+        raise SystemExit(f"Missing distribution files: {', '.join(missing)}")
 
     inferred_repo = infer_repo_from_git()
     repo = ensure_repo(args.repo or "", inferred_repo)
@@ -126,33 +156,36 @@ def main() -> None:
     if not repo:
         raise SystemExit("Repo must be set in wheels.json or provided via --repo.")
 
-    create_release(args.tag, args.title or args.tag, args.notes, wheel_paths)
-
-    records = collect_wheels(wheel_paths, args.tag)
+    records = collect_artifacts(artifact_paths, args.tag)
     existing = {
         (entry.get("release_tag"), entry.get("filename"))
-        for entry in manifest.get("wheels", [])
+        for entry in iter_manifest_artifacts(manifest)
     }
     for record in records:
         key = (record.release_tag, record.filename)
         if key in existing:
-            raise SystemExit(f"Wheel already recorded in manifest: {record.filename} ({record.release_tag})")
+            raise SystemExit(f"Artifact already recorded in manifest: {record.filename} ({record.release_tag})")
+
+    create_release(args.tag, args.title or args.tag, args.notes, artifact_paths)
 
     manifest["repo"] = repo
     manifest.setdefault("wheels", [])
-    manifest["wheels"].extend(
-        {
-            "filename": record.filename,
-            "package": record.package,
-            "version": record.version,
-            "size_bytes": record.size_bytes,
-            "sha256": record.sha256,
-            "release_tag": record.release_tag,
-        }
-        for record in records
-    )
+    manifest.setdefault("sdists", [])
+    for record in records:
+        target = manifest["wheels"] if record.kind == "wheel" else manifest["sdists"]
+        target.append(
+            {
+                "filename": record.filename,
+                "package": record.package,
+                "version": record.version,
+                "size_bytes": record.size_bytes,
+                "sha256": record.sha256,
+                "release_tag": record.release_tag,
+            }
+        )
 
     manifest["wheels"].sort(key=lambda entry: (entry["package"], entry["version"], entry["filename"]))
+    manifest["sdists"].sort(key=lambda entry: (entry["package"], entry["version"], entry["filename"]))
     write_manifest(manifest_path, manifest)
 
     subprocess.run([sys.executable, str(root / "scripts" / "generate_index.py")], check=True)

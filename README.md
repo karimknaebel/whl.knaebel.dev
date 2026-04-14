@@ -1,14 +1,14 @@
 # whl.knaebel.dev
 
-Static wheel hosting for `pip --find-links` using GitHub Releases + GitHub Pages.
+Static wheel and sdist hosting for `pip --find-links` using GitHub Releases + GitHub Pages.
 
 ## Publish flow
 
-1. Prepare wheel files (local paths, not committed).
+1. Prepare distribution files (wheel and/or sdist paths, not committed).
 2. Create a GitHub Release and update the index:
 
 ```bash
-python scripts/publish_release.py --tag wheels-YYYY-MM-DD path/to/*.whl
+uv run scripts/publish_release.py --tag wheels-YYYY-MM-DD path/to/*.{whl,tar.gz,zip}
 ```
 
 3. Deploy `dist/` to GitHub Pages.
@@ -21,7 +21,7 @@ GitHub Pages config (Actions-based):
 
 ## Repo layout
 
-1. `wheels.json` stores the published wheel metadata.
+1. `wheels.json` stores the published wheel and sdist metadata.
 2. `dist/` is the generated GitHub Pages site.
 3. `scripts/publish_release.py` creates a release and updates the index.
 4. `scripts/generate_index.py` rebuilds the index from `wheels.json`.
@@ -32,5 +32,6 @@ GitHub Pages config (Actions-based):
 pip install --no-index --find-links https://whl.knaebel.dev/ PACKAGE==VERSION
 ```
 
-Package names are normalized per pip rules, so a wheel like
-`gloss_rs-0.8.0-...whl` is installable as `gloss-rs==0.8.0`.
+Package names are normalized per pip rules, so artifacts like
+`gloss_rs-0.8.0-...whl` and `gloss-rs-0.8.0.tar.gz` are installable as
+`gloss-rs==0.8.0`.
